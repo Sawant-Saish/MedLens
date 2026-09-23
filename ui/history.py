@@ -2,7 +2,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from models import MAX_HISTORY_ENTRIES, HistoryEntry, SummaryResult
+from models import CriticResult, MAX_HISTORY_ENTRIES, HistoryEntry, SummaryResult
 
 
 def init_history() -> None:
@@ -25,6 +25,7 @@ def add_to_history(
     topic: str | None,
     result: SummaryResult,
     source_label: str = "",
+    critic: CriticResult | None = None,
 ) -> HistoryEntry:
     entry = HistoryEntry(
         timestamp=datetime.now(),
@@ -33,6 +34,7 @@ def add_to_history(
         topic=topic,
         result=result,
         source_label=source_label,
+        critic=critic,
     )
     st.session_state.history.insert(0, entry)
     st.session_state.history = st.session_state.history[:MAX_HISTORY_ENTRIES]

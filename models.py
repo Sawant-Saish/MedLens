@@ -31,6 +31,21 @@ class SummaryGenerationError(Exception):
         super().__init__(user_message)
 
 
+class FlaggedIssue(BaseModel):
+    statement: str = ""
+    issue_type: str = ""
+    explanation: str = ""
+
+
+class CriticResult(BaseModel):
+    overall_score: int = 0
+    factual_consistency_score: int = 0
+    coverage_score: int = 0
+    faithfulness_score: int = 0
+    assessment: str = ""
+    flagged_issues: list[FlaggedIssue] = Field(default_factory=list)
+
+
 @dataclass
 class HistoryEntry:
     timestamp: datetime
@@ -39,3 +54,4 @@ class HistoryEntry:
     topic: str | None
     result: SummaryResult
     source_label: str = ""
+    critic: CriticResult | None = None

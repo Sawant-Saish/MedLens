@@ -1,6 +1,7 @@
 import streamlit as st
 
 from config import MISSING_API_KEY_MESSAGE, get_openai_api_key, validate_input
+from critic import generate_critique
 from input_builder import build_source_label, count_sources
 from llm import generate_summary
 from models import HistoryEntry, SummaryGenerationError
@@ -44,9 +45,9 @@ if form_data.generate_clicked:
                 source_count = count_sources(form_data.abstract, pdf_documents)
                 source_label = build_source_label(form_data.abstract, pdf_documents)
                 spinner_label = (
-                    "Extracting PDF text and generating summary..."
+                    "Extracting text, generating summary, and running quality review..."
                     if pdf_documents
-                    else "Generating summary..."
+                    else "Generating summary and running quality review..."
                 )
                 with st.spinner(spinner_label):
                     result = generate_summary(
@@ -55,12 +56,14 @@ if form_data.generate_clicked:
                         form_data.topic,
                         source_count=source_count,
                     )
+                    critic = generate_critique(combined_text, result)
                     entry_to_display = add_to_history(
                         combined_text,
                         form_data.summary_length,
                         form_data.topic,
                         result,
                         source_label=source_label,
+                        critic=critic,
                     )
         except SummaryGenerationError as e:
             show_error(e.user_message)
@@ -75,6 +78,8 @@ if entry_to_display is not None:
         entry_to_display.summary_length,
         entry_to_display.topic,
         source_label=entry_to_display.source_label,
+        critic=entry_to_display.critic,
+        generated_at=entry_to_display.timestamp,
     )
 
 render_footer()
